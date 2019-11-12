@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+ 
+    <!--
+    	See http://wiki.openmrs.org/display/docs/Module+liquibase+File for 
+    	documentation on this file.
+    
+        See http://www.liquibase.org/manual/home#available_database_refactorings
+        for a list of supported elements and attributes
+    -->
+    <changeSet id="d4687e59-507b-4286-a93c-5227c802f2dd" author="ibacher">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="bcbi_data_records" /></not>
+        </preConditions>
+        <createTable tableName="bcbi_data_records">
+            <column name="id" type="int(11)" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="file" type="varchar(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hashValue" type="varbinary(32)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creator" type="int(11)">
+                <constraints nullable="false" foreignKeyName="creator_for_bcbi_data_records" references="users(user_id)"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="int(11)">
+                <constraints nullable="true" foreignKeyName="changed_by_for_bcbi_data_records" references="users(user_id)"/>
+            </column>
+            <column name="date_changed" type="datetime">
+                <constraints nullable="true"/>
+            </column>
+            <column name="retired" type="tinyint(1)" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="retired_by" type="int(11)">
+                <constraints nullable="true" foreignKeyName="retired_by_for_bcbi_data_records" references="users(user_id)"/>
+            </column>
+            <column name="date_retired" type="datetime">
+                <constraints nullable="true"/>
+            </column>
+            <column name="retire_reason" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+ 
+</databaseChangeLog>
