@@ -1,0 +1,9 @@
+maintainers:
+  - name: Ian Bacher
+    github: ibacher
+repo: openmrs-bcbi-training
+repo_url: https://github.com/bcbi/openmrs-bcbi-training
+site_description: An OpenMRS module for the BCBI Training environment using data from MIMIC-III
+site_name: OpenMRS BCBI Training
+type: software
+
