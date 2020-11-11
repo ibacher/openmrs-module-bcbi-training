@@ -25,11 +25,11 @@ public class BCBIVitalsEncounterMatcher implements BaseEncounterMatcher {
 		EncounterType encounterType = encounterParameters.getEncounterType();
 		String encounterUuid = encounterParameters.getEncounterUuid();
 
-		if (StringUtils.isBlank(encounterUuid)){
+		if (StringUtils.isBlank(encounterUuid)) {
 			return null;
 		}
 
-		if(visit.getEncounters()!=null){
+		if (visit.getEncounters() != null) {
 			for (Encounter encounter : visit.getEncounters()) {
 				if (!encounter.getVoided() && (encounter.getUuid() != null && encounter.getUuid().equals(encounterUuid)) &&
 						(encounter.getEncounterType() != null && encounter.getEncounterType().equals(encounterType))) {

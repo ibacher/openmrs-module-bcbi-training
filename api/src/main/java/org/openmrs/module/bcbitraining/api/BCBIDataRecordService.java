@@ -9,14 +9,13 @@
  */
 package org.openmrs.module.bcbitraining.api;
 
+import static org.openmrs.module.bcbitraining.BCBITrainingPrivilegeConstants.EDIT_DATA_RECORDS;
+import static org.openmrs.module.bcbitraining.BCBITrainingPrivilegeConstants.GET_DATA_RECORDS;
+
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.bcbitraining.BCBIDataRecord;
-
-import static org.openmrs.module.bcbitraining.BCBITrainingPrivilegeConstants.*;
-
-import java.io.InputStream;
 
 @SuppressWarnings("unused")
 public interface BCBIDataRecordService extends OpenmrsService {

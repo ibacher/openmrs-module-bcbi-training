@@ -1,6 +1,10 @@
 package org.openmrs.module.bcbitraining.data;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Objects;
 
 import lombok.Setter;
@@ -27,12 +31,12 @@ public abstract class BaseHandler {
 		File visitsFile = new File(file);
 		if (visitsFile.exists() && visitsFile.canRead()) {
 			bis = new BufferedInputStream(new BOMInputStream(new FileInputStream(file)));
-		}
-		else {
+		} else {
 			try {
 				bis = new BufferedInputStream(new BOMInputStream(Objects.requireNonNull(
 						OpenmrsClassLoader.getSystemResourceAsStream(file))));
-			} catch (NullPointerException e) {
+			}
+			catch (NullPointerException e) {
 				throw new FileNotFoundException("Could not find file " + file + " on classpath");
 			}
 		}

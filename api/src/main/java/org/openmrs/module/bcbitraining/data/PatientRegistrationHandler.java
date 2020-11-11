@@ -9,12 +9,29 @@
  */
 package org.openmrs.module.bcbitraining.data;
 
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.ADMISSION_ENCOUNTER_TYPE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.HOSPITAL_LOCATION_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.MIREBALAIS_VISIT_TYPE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.PHYSICIAN_PROVIDERROLE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.REGISTRATION_ENCOUNTER_TYPE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.ZL_EMR_PATIENT_ID_TYPE_UUID;
+
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVRecord;
-import org.openmrs.*;
+import org.openmrs.Concept;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifierType;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
 import org.openmrs.module.bcbitraining.descriptor.data.DiagnosisDescriptor;
@@ -23,14 +40,14 @@ import org.openmrs.module.providermanagement.Provider;
 import org.openmrs.module.providermanagement.ProviderRole;
 import org.openmrs.module.providermanagement.api.ProviderManagementService;
 
-import static org.openmrs.module.bcbitraining.BCBITrainingConstants.*;
-
 public class PatientRegistrationHandler extends BaseCSVHandler {
 
 	private static final String DATA_FILE = "/data/registration_encounters.csv";
+
 	private static final String DX_DATA_FILE = "/data/diagnoses.csv";
 
-	public Iterable<EncounterTransaction> generateRegistrationEncounters(ConceptService conceptService, PatientService patientService, ProviderManagementService providerManagementService) throws IOException {
+	public Iterable<EncounterTransaction> generateRegistrationEncounters(ConceptService conceptService,
+			PatientService patientService, ProviderManagementService providerManagementService) throws IOException {
 		Set<EncounterTransaction> encounters = new LinkedHashSet<>();
 		PatientIdentifierType identifierType = patientService.getPatientIdentifierTypeByUuid(ZL_EMR_PATIENT_ID_TYPE_UUID);
 		ProviderRole physicianRole = providerManagementService.getProviderRoleByUuid(PHYSICIAN_PROVIDERROLE_UUID);
@@ -89,11 +106,16 @@ public class PatientRegistrationHandler extends BaseCSVHandler {
 			final boolean primaryDx = record.get("PRIMARY_DX").equals("1");
 
 			patientDxs.add(new DiagnosisDescriptor() {
-				@Override
-				public String cielCode() { return cielCode; }
 
 				@Override
-				public boolean primary() { return primaryDx; }
+				public String cielCode() {
+					return cielCode;
+				}
+
+				@Override
+				public boolean primary() {
+					return primaryDx;
+				}
 			});
 		}
 
@@ -111,7 +133,8 @@ public class PatientRegistrationHandler extends BaseCSVHandler {
 			Date encounterDate;
 			try {
 				encounterDate = DATE_FORMAT.parse(record.get("ADMITTIME"));
-			} catch (ParseException e) {
+			}
+			catch (ParseException e) {
 				throw new IOException(e);
 			}
 
@@ -128,7 +151,8 @@ public class PatientRegistrationHandler extends BaseCSVHandler {
 			EncounterTransaction encounter = createEncounter(
 					REGISTRATION_ENCOUNTER_TYPE_UUID, encounterDate, providers, patient.getUuid());
 
-			encounter.addObservation(getPlaceOfBirth(birthplace, country, cityVillage, stateProvince, address3, address1, encounterDate));
+			encounter.addObservation(
+					getPlaceOfBirth(birthplace, country, cityVillage, stateProvince, address3, address1, encounterDate));
 
 			addObsIfNotNull(encounter, createObsForConcept(occupation, encounterDate, otherOccupation.getUuid()));
 			addObsIfNotNull(encounter, createObsForConcept(civilStatus, encounterDate,
@@ -141,7 +165,8 @@ public class PatientRegistrationHandler extends BaseCSVHandler {
 			EncounterTransaction admission = createEncounter(
 					ADMISSION_ENCOUNTER_TYPE_UUID, encounterDate, providers, patient.getUuid());
 
-			for (DiagnosisDescriptor descriptor : diagnoses.getOrDefault(patient.getPatientIdentifier(identifierType).getIdentifier(), new LinkedHashSet<>())) {
+			for (DiagnosisDescriptor descriptor : diagnoses
+					.getOrDefault(patient.getPatientIdentifier(identifierType).getIdentifier(), new LinkedHashSet<>())) {
 				Concept diagnosis = conceptService.getConceptByMapping(descriptor.cielCode(), "CIEL");
 				if (diagnosis == null) {
 					continue;
@@ -168,13 +193,14 @@ public class PatientRegistrationHandler extends BaseCSVHandler {
 		return encounters;
 	}
 
-	private EncounterTransaction createEncounter(String encounterTypeUuid, Date encounterDate, Set<EncounterTransaction.Provider> providers, String patientUuid) {
+	private EncounterTransaction createEncounter(String encounterTypeUuid, Date encounterDate,
+			Set<EncounterTransaction.Provider> providers, String patientUuid) {
 		EncounterTransaction encounter = new EncounterTransaction()
-			.setEncounterDateTime(encounterDate)
-			.setEncounterTypeUuid(encounterTypeUuid)
-			.setLocationUuid(HOSPITAL_LOCATION_UUID)
-			.setVisitTypeUuid(MIREBALAIS_VISIT_TYPE_UUID)
-			.setPatientUuid(patientUuid);
+				.setEncounterDateTime(encounterDate)
+				.setEncounterTypeUuid(encounterTypeUuid)
+				.setLocationUuid(HOSPITAL_LOCATION_UUID)
+				.setVisitTypeUuid(MIREBALAIS_VISIT_TYPE_UUID)
+				.setPatientUuid(patientUuid);
 
 		// gotta love API consistency
 		encounter.setVisitLocationUuid(HOSPITAL_LOCATION_UUID);
@@ -183,7 +209,8 @@ public class PatientRegistrationHandler extends BaseCSVHandler {
 		return encounter;
 	}
 
-	private EncounterTransaction.Observation getPlaceOfBirth(Concept birthplace, Concept country, Concept cityVillage, Concept stateProvince, Concept address3, Concept address1, Date observationDate) {
+	private EncounterTransaction.Observation getPlaceOfBirth(Concept birthplace, Concept country, Concept cityVillage,
+			Concept stateProvince, Concept address3, Concept address1, Date observationDate) {
 		EncounterTransaction.Observation birthplaceObs = createObsForConcept(birthplace, observationDate, null);
 
 		birthplaceObs.addGroupMember(createObsForConcept(country, observationDate, "Yon lot peyi"));

@@ -37,7 +37,9 @@ public class BCBIDataRecordServiceImpl extends BaseOpenmrsService implements BCB
 		}
 
 		byte[] hashValue = dataRecord.getHashValue();
-		if (hashValue == null) { return false; }
+		if (hashValue == null) {
+			return false;
+		}
 
 		byte[] currentHash = calculateHash(file);
 		return Arrays.equals(currentHash, hashValue);

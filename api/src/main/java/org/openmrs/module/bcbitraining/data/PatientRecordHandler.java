@@ -11,10 +11,20 @@ package org.openmrs.module.bcbitraining.data;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVRecord;
-import org.openmrs.*;
+import org.openmrs.Location;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.Person;
+import org.openmrs.PersonAddress;
+import org.openmrs.PersonAttribute;
+import org.openmrs.PersonAttributeType;
+import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 
@@ -38,7 +48,8 @@ public class PatientRecordHandler extends BaseCSVHandler {
 		return address;
 	}
 
-	public Iterable<Patient> generatePatients(PatientService patientService, PersonService personService, Location defaultLocation) throws IOException {
+	public Iterable<Patient> generatePatients(PatientService patientService, PersonService personService,
+			Location defaultLocation) throws IOException {
 		PatientIdentifierType identifierType = patientService.getPatientIdentifierTypeByUuid(ZL_EMR_PATIENT_ID_TYPE_UUID);
 
 		// unfortunately, PIH has elected to store the mother's first name as the "race" attribute
@@ -51,14 +62,14 @@ public class PatientRecordHandler extends BaseCSVHandler {
 			hasRecords = true;
 			Patient patient = getPatientForRecord(record, patientService, identifierType);
 
-		 	if (patient != null) {
-		        setupPatient(patient, record, identifierType, defaultLocation, mothersFirstNameAttributeType);
-			    patients.add(patient);
-		    } else {
-		 		patient = new Patient();
-			    setupPatient(patient, record, identifierType, defaultLocation, mothersFirstNameAttributeType);
-			    patients.add(patient);
-		    }
+			if (patient != null) {
+				setupPatient(patient, record, identifierType, defaultLocation, mothersFirstNameAttributeType);
+				patients.add(patient);
+			} else {
+				patient = new Patient();
+				setupPatient(patient, record, identifierType, defaultLocation, mothersFirstNameAttributeType);
+				patients.add(patient);
+			}
 		}
 
 		if (hasRecords) {
@@ -68,7 +79,8 @@ public class PatientRecordHandler extends BaseCSVHandler {
 		return patients;
 	}
 
-	private void setupPatient(Patient patient, CSVRecord record, PatientIdentifierType identifierType, Location defaultLocation, PersonAttributeType mothersFirstNameAttributeType) throws IOException {
+	private void setupPatient(Patient patient, CSVRecord record, PatientIdentifierType identifierType,
+			Location defaultLocation, PersonAttributeType mothersFirstNameAttributeType) throws IOException {
 		if (patient == null) {
 			throw new IllegalArgumentException("Patient cannot be null");
 		}
@@ -87,7 +99,8 @@ public class PatientRecordHandler extends BaseCSVHandler {
 		Date birthdate;
 		try {
 			birthdate = DATE_FORMAT.parse(record.get("DOB"));
-		} catch (ParseException e) {
+		}
+		catch (ParseException e) {
 			throw new IOException(e);
 		}
 		person.setBirthdate(birthdate);

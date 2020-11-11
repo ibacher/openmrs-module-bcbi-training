@@ -24,27 +24,27 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @SuppressWarnings("unused")
 public class ConceptNameServiceImpl extends BaseOpenmrsService implements ConceptNameService {
-	
+
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Setter
 	private ConceptNameDAO dao;
-	
+
 	@Override
 	public ConceptName getConceptName(Integer id) throws APIException {
 		return dao.getConceptName(id);
 	}
-	
+
 	@Override
 	public ConceptName getConceptNameByName(String name) throws APIException {
 		return dao.getConceptNameByName(name);
 	}
-	
+
 	@Override
 	public ConceptName getConceptNameByName(String name, Locale locale) throws APIException {
 		return dao.getConceptNameByName(name, locale);
 	}
-	
+
 	@Override
 	public ConceptName getConceptNameByUuid(String uuid) throws APIException {
 		return dao.getConceptNameByUuid(uuid);

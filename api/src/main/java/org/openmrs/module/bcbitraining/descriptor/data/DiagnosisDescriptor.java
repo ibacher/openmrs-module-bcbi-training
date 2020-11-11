@@ -12,9 +12,9 @@ package org.openmrs.module.bcbitraining.descriptor.data;
 import org.openmrs.Concept;
 
 public abstract class DiagnosisDescriptor extends DataDescriptor<Concept> {
-	
+
 	public abstract String cielCode();
-	
+
 	public abstract boolean primary();
 
 }

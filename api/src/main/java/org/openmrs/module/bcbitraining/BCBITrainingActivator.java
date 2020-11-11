@@ -9,16 +9,60 @@
  */
 package org.openmrs.module.bcbitraining;
 
-import static org.openmrs.module.bcbitraining.BCBITrainingConstants.*;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.ADMISSION_ENCOUNTER_TYPE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.BCBI_PATIENT_ID_SOURCE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.DIAGNOSIS_CLASS_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.DRUG_CLASS_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.GP_ENCOUNTER_MATCHER;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.HOSPITAL_LOCATION_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.HOSPITAL_NAME;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.NA_DATATYPE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.PHYSICIAN_PROVIDERROLE_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.TEST_CLASS_UUID;
+import static org.openmrs.module.bcbitraining.BCBITrainingConstants.ZL_EMR_PATIENT_ID_TYPE_UUID;
+import static org.openmrs.module.bcbitraining.metadata.BCBIMetadataUtils.createConceptName;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateUtils;
-import org.openmrs.*;
-import org.openmrs.api.*;
+import org.openmrs.Concept;
+import org.openmrs.ConceptClass;
+import org.openmrs.ConceptDatatype;
+import org.openmrs.ConceptMap;
+import org.openmrs.ConceptMapType;
+import org.openmrs.ConceptName;
+import org.openmrs.ConceptReferenceTerm;
+import org.openmrs.ConceptSource;
+import org.openmrs.Encounter;
+import org.openmrs.GlobalProperty;
+import org.openmrs.Location;
+import org.openmrs.LocationTag;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.Person;
+import org.openmrs.Role;
+import org.openmrs.User;
+import org.openmrs.api.AdministrationService;
+import org.openmrs.api.ConceptService;
+import org.openmrs.api.EncounterService;
+import org.openmrs.api.FormService;
+import org.openmrs.api.LocationService;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.PersonService;
+import org.openmrs.api.UserService;
+import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.ModuleFactory;
@@ -53,19 +97,14 @@ import org.openmrs.module.providermanagement.api.ProviderManagementService;
 import org.openmrs.scheduler.SchedulerException;
 import org.openmrs.scheduler.SchedulerService;
 import org.openmrs.scheduler.TaskDefinition;
-import org.openmrs.util.OpenmrsConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.openmrs.module.bcbitraining.metadata.BCBIMetadataUtils.*;
+import org.openmrs.util.OpenmrsConstants;;
 
 /**
  * This class contains the logic that is run every time this module is either started or shutdown
  */
+@Slf4j(topic = "org.openmrs.api")
 public class BCBITrainingActivator extends BaseModuleActivator {
-	
-	private final Logger log = LoggerFactory.getLogger("org.openmrs.api");
-	
+
 	private Map<String, ConceptSource> conceptSources;
 
 	/**
@@ -162,7 +201,8 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 
 			// Since we've just loaded a bunch of data, rebuild the Lucene index
 			Context.updateSearchIndexAsync();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			ModuleFactory.stopModule(ModuleFactory.getModuleById("bcbitraining"), true, true);
 			throw new RuntimeException("failed to start BCBI Training Module", e);
 		}
@@ -184,26 +224,26 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 		// note that all the LocationTags we need are already included in the PIH EMR metadata
 		for (LocationDescriptor locationDescriptor : BCBILocations.ALL_LOCATIONS) {
 			Location location = locationService.getLocationByUuid(locationDescriptor.uuid());
-			
+
 			if (location == null) {
 				Collection<String> tags = new LinkedHashSet<>();
 				for (LocationTagDescriptor tagDescriptor : locationDescriptor.tags()) {
 					tags.add(tagDescriptor.uuid());
 				}
-				
+
 				String parentUuid = null;
 				if (locationDescriptor.parent() != null) {
 					parentUuid = locationDescriptor.parent().uuid();
 				}
-				
+
 				location = CoreConstructors.location(locationDescriptor.name(), locationDescriptor.description(),
-				    locationDescriptor.uuid(), parentUuid, tags);
+						locationDescriptor.uuid(), parentUuid, tags);
 			} else {
 				Collection<String> tagNames = new LinkedHashSet<>();
 				for (LocationTagDescriptor tagDescriptor : locationDescriptor.tags()) {
 					tagNames.add(tagDescriptor.name());
 				}
-				
+
 				Collection<String> currentTagNames = new LinkedHashSet<>();
 				Collection<LocationTag> tagsToRemove = new LinkedHashSet<>();
 				for (LocationTag tag : location.getTags()) {
@@ -213,13 +253,13 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 						currentTagNames.add(tag.getName());
 					}
 				}
-				
+
 				for (LocationTag tag : tagsToRemove) {
 					location.removeTag(tag);
 				}
-				
+
 				tagNames.removeAll(currentTagNames);
-				
+
 				for (String tagName : tagNames) {
 					if (!location.hasTag(tagName)) {
 						LocationTag tag = locationService.getLocationTagByName(tagName);
@@ -227,7 +267,7 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 					}
 				}
 			}
-			
+
 			locationService.saveLocation(location);
 		}
 	}
@@ -249,28 +289,28 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 
 		identifierSourceService.saveIdentifierSource(bcbiSource);
 	}
-	
+
 	private void createMissingDrugConcepts(ConceptService conceptService, ConceptNameService conceptNameService) {
 		ConceptClass drug = conceptService.getConceptClassByUuid(DRUG_CLASS_UUID);
 		ConceptDatatype na = conceptService.getConceptDatatypeByUuid(NA_DATATYPE_UUID);
-		
+
 		for (ConceptDescriptor conceptDescriptor : BCBIDrugConcepts.ALL_DRUGS) {
 			createConcept(conceptService, conceptNameService, conceptDescriptor, drug, na);
 		}
 	}
-	
+
 	private void createMissingDiagnosisConcepts(ConceptService conceptService, ConceptNameService conceptNameService) {
 		ConceptClass diagnosis = conceptService.getConceptClassByUuid(DIAGNOSIS_CLASS_UUID);
 		ConceptDatatype na = conceptService.getConceptDatatypeByUuid(NA_DATATYPE_UUID);
-		
+
 		for (ConceptDescriptor conceptDescriptor : BCBIDiagnosisConcepts.ALL_DIAGNOSES) {
 			createConcept(conceptService, conceptNameService, conceptDescriptor, diagnosis, na);
 		}
 	}
-	
+
 	private void createMissingLabConcepts(ConceptService conceptService, ConceptNameService conceptNameService) {
 		ConceptClass test = conceptService.getConceptClassByUuid(TEST_CLASS_UUID);
-		
+
 		for (ConceptDescriptor conceptDescriptor : BCBILabConcepts.ALL_LABS) {
 			createConcept(conceptService, conceptNameService, conceptDescriptor, test);
 		}
@@ -278,24 +318,24 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 
 	@SuppressWarnings("unused")
 	private void createConcept(ConceptService conceptService, ConceptNameService conceptNameService,
-	        ConceptDescriptor conceptDescriptor) {
+			ConceptDescriptor conceptDescriptor) {
 		createConcept(conceptService, conceptNameService, conceptDescriptor, null, null);
 	}
-	
+
 	private void createConcept(ConceptService conceptService, ConceptNameService conceptNameService,
-	        ConceptDescriptor conceptDescriptor, ConceptClass conceptClass) {
+			ConceptDescriptor conceptDescriptor, ConceptClass conceptClass) {
 		createConcept(conceptService, conceptNameService, conceptDescriptor, conceptClass, null);
 	}
-	
+
 	private void createConcept(ConceptService conceptService, ConceptNameService conceptNameService,
-	        ConceptDescriptor conceptDescriptor, ConceptClass conceptClass, ConceptDatatype conceptDatatype) {
-		
+			ConceptDescriptor conceptDescriptor, ConceptClass conceptClass, ConceptDatatype conceptDatatype) {
+
 		if (conceptService.getConceptByUuid(conceptDescriptor.uuid()) != null) {
 			return;
 		}
-		
+
 		log.info("Working on concept {}", conceptDescriptor.names().iterator().next().name());
-		
+
 		Concept concept;
 		for (ConceptNameDescriptor conceptNameDescriptor : conceptDescriptor.names()) {
 			concept = conceptService.getConceptByName(conceptNameDescriptor.name());
@@ -305,61 +345,61 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 				for (ConceptName name : concept.getNames(Locale.ENGLISH)) {
 					names.add(name.getName().toLowerCase(Locale.ENGLISH));
 				}
-				
+
 				for (ConceptNameDescriptor nameDescriptor : conceptDescriptor.names()) {
 					if (!names.contains(nameDescriptor.name().toLowerCase(Locale.ENGLISH))) {
 						ConceptName conceptName = createConceptName(nameDescriptor);
-						
+
 						names.add(nameDescriptor.name());
 						concept.addName(conceptName);
 					}
 				}
-				
+
 				for (ConceptMap conceptMap : generateConceptMaps(conceptService, conceptDescriptor)) {
 					concept.addConceptMapping(conceptMap);
 				}
-				
+
 				conceptService.saveConcept(concept);
 				return;
 			}
 		}
-		
+
 		log.info("Creating concept {}", conceptDescriptor.names().iterator().next().name());
-		
+
 		concept = new Concept();
 		if (conceptClass != null) {
 			concept.setConceptClass(conceptClass);
 		} else {
 			concept.setConceptClass(conceptService.getConceptClassByName(conceptDescriptor.conceptClass().name()));
 		}
-		
+
 		if (conceptDatatype != null) {
 			concept.setDatatype(conceptDatatype);
 		} else {
 			concept.setDatatype(conceptService.getConceptDatatypeByName(conceptDescriptor.datatype().name()));
 		}
-		
+
 		for (ConceptNameDescriptor nameDescriptor : conceptDescriptor.names()) {
 			ConceptName conceptName = null;
 			if (nameDescriptor.uuid() != null) {
 				conceptName = conceptNameService.getConceptNameByUuid(nameDescriptor.uuid());
 			}
-			
+
 			if (conceptName == null) {
 				conceptName = conceptNameService.getConceptNameByName(nameDescriptor.name());
 			}
-			
+
 			if (conceptName == null) {
 				conceptName = createConceptName(nameDescriptor);
 			}
-			
+
 			concept.addName(conceptName);
 		}
-		
+
 		for (ConceptMap conceptMap : generateConceptMaps(conceptService, conceptDescriptor)) {
 			concept.addConceptMapping(conceptMap);
 		}
-		
+
 		conceptService.saveConcept(concept);
 	}
 
@@ -368,45 +408,45 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 		zlEmrIdType.setValidator(null);
 		patientService.savePatientIdentifierType(zlEmrIdType);
 	}
-	
+
 	private Collection<ConceptMap> generateConceptMaps(ConceptService conceptService, ConceptDescriptor conceptDescriptor) {
 		// NB This **MUST** be a Set<ConceptMap>
-		Collection<ConceptMap> conceptMaps = new HashSet<>();
+		Collection<ConceptMap> conceptMaps = new LinkedHashSet<>();
 		ConceptMapType SAME_AS = conceptService.getConceptMapTypeByName("SAME-AS");
 		for (ConceptMapDescriptor mapDescriptor : conceptDescriptor.sameAs()) {
 			Concept concept = conceptService.getConceptByMapping(mapDescriptor.conceptReference().code(), mapDescriptor
-			        .conceptReference().conceptSource().name(), false);
-			
+					.conceptReference().conceptSource().name(), false);
+
 			if (concept == null) {
 				ConceptSource conceptSource = conceptSources.get(mapDescriptor.conceptReference().conceptSource().name());
 				String code = mapDescriptor.conceptReference().code();
-				
+
 				ConceptReferenceTerm referenceTerm = conceptService.getConceptReferenceTermByCode(code, conceptSource);
 				if (referenceTerm == null) {
 					referenceTerm = new ConceptReferenceTerm(conceptSource, code, null);
 				}
-				
+
 				ConceptMap conceptMap = new ConceptMap();
 				conceptMap.setConceptReferenceTerm(referenceTerm);
 				conceptMap.setConceptMapType(SAME_AS);
-				
+
 				conceptMaps.add(conceptMap);
 			}
 		}
-		
+
 		return conceptMaps;
 	}
 
 	private void ensureLoginLocation(LocationService locationService) {
 		LocationTag loginLocation = locationService.getLocationTagByUuid(LocationTags.LOGIN_LOCATION.uuid());
-		List<Location> loginLocations =  locationService.getLocationsByTag(loginLocation);
+		List<Location> loginLocations = locationService.getLocationsByTag(loginLocation);
 		if (loginLocations == null || loginLocations.size() == 0) {
 			Location bcbiHospital = locationService.getLocationByUuid(HOSPITAL_LOCATION_UUID);
 			bcbiHospital.addTag(loginLocation);
 			locationService.saveLocation(bcbiHospital);
 		}
 	}
-	
+
 	// note that our assumption here is that login locations are the only locations of interest
 	private void unflagNonBCBILocations(LocationService locationService) {
 		for (Location location : locationService.getAllLocations(false)) {
@@ -428,14 +468,14 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 			return null;
 		}
 	}
-	
+
 	private static void updateGlobalProperty(String name, Object value) {
 		AdministrationService administrationService = Context.getAdministrationService();
 		GlobalProperty gp = administrationService.getGlobalPropertyObject(name);
 		gp.setPropertyValue(value == null ? "" : value.toString());
 		administrationService.saveGlobalProperty(gp);
 	}
-	
+
 	private void setupConsultLocations(LocationService locationService) {
 		setLocationTagsFor(locationService, LocationTags.CHECKIN_LOCATION, BCBILocations.ALL_LOCATIONS);
 		setLocationTagsFor(locationService, LocationTags.CONSULT_NOTE_LOCATION, BCBILocations.ALL_LOCATIONS);
@@ -448,7 +488,7 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 		setLocationTagsFor(locationService, LocationTags.MENTAL_HEALTH_LOCATION, BCBILocations.ALL_LOCATIONS);
 		setLocationTagsFor(locationService, LocationTags.PROVIDER_MANAGEMENT_LOCATION, BCBILocations.ALL_LOCATIONS);
 		setLocationTagsFor(locationService, LocationTags.NCD_CONSULT_LOCATION, BCBILocations.ALL_LOCATIONS);
-		
+
 		setLocationTagsFor(locationService, LocationTags.ADMISSION_LOCATION, BCBILocations.ALL_LOCATIONS);
 		setLocationTagsFor(locationService, LocationTags.ADMISSION_NOTE_LOCATION, BCBILocations.ALL_LOCATIONS);
 		setLocationTagsFor(locationService, LocationTags.APPOINTMENT_LOCATION, null);
@@ -466,18 +506,18 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 		setLocationTagsFor(locationService, LocationTags.SURGERY_NOTE_LOCATION, null);
 		setLocationTagsFor(locationService, LocationTags.TRANSFER_LOCAITON, BCBILocations.ALL_LOCATIONS);
 	}
-	
+
 	private static void setLocationTagsFor(LocationService service, LocationTagDescriptor locationTag,
-	        Collection<LocationDescriptor> locationsThatGetTag) {
-		
+			Collection<LocationDescriptor> locationsThatGetTag) {
+
 		LocationTag tag = service.getLocationTagByUuid(locationTag.uuid());
 		Set<String> locationsUuidToTag = locationsThatGetTag == null ? new LinkedHashSet<>() :
 				locationsThatGetTag.stream().filter(Objects::nonNull).map(Descriptor::uuid).collect(Collectors.toSet());
-		
+
 		for (Location candidate : service.getAllLocations()) {
 			boolean expected = locationsUuidToTag.contains(candidate.getUuid());
 			boolean actual = candidate.hasTag(tag.getName());
-			
+
 			if (actual && !expected) {
 				candidate.removeTag(tag);
 				service.saveLocation(candidate);
@@ -487,33 +527,32 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 			}
 		}
 	}
-	
-	private void setupUsers(UserService userService, AccountService accountService, ProviderManagementService providerManagementService) {
+
+	private void setupUsers(UserService userService, AccountService accountService,
+			ProviderManagementService providerManagementService) {
 		Set<Role> roles = new LinkedHashSet<>(2);
 		roles.add(userService.getRole("Application Role: physician"));
 		roles.add(userService.getRole("Application Role: archivistClerk"));
-		
+
 		Role privilegeLevel = userService.getRole("Privilege Level: High");
-		
+
 		ProviderRole physician = providerManagementService
-		        .getProviderRoleByUuid(PHYSICIAN_PROVIDERROLE_UUID);
-		ProviderRole pharmacist = providerManagementService
-				.getProviderRoleByUuid(PHARMACIST_PROVIDERROLE_UUID);
-		
+				.getProviderRoleByUuid(PHYSICIAN_PROVIDERROLE_UUID);
+
 		int i = 1;
 		for (String[] userInfo : new String[][] { { "Jerome", "Styer", "M" }, { "Genesis", "Bucco", "F" },
-		        { "Drew", "Zapato", "M" }, { "Jim", "Patillo", "M" }, { "Garrett", "Carothers", "M" },
-		        { "Kaitlyn", "Villamar", "F" }, { "Marshall", "Catlow", "M" }, { "Hadley", "Cockerhan", "F" },
-		        { "Patsy", "Furfey", "M" }, { "Kerri", "Hutts", "F" }, { "Helena", "Gillion", "F" },
-		        { "Kristal", "Emmitt", "F" }, { "Gardner", "Dove", "M" }, { "Shane", "Besanson", "M" },
-		        { "Kimberley", "Esterbrook", "F" }, { "Moses", "Dair", "M" }, { "Abby", "Metta", "F" },
-		        { "Frances", "Huyett", "F" }, { "Lester", "Amerman", "M" }, { "Sophia", "Horita", "F" },
-		        { "Rose", "Sarria", "F" }, { "Warren", "Castilla", "M" }, { "Kimberly", "Healy", "F" },
-		        { "Anaiyah", "Vaux", "F" }, { "Elena", "Amerson", "F" }, { "Marissa", "Letendre", "F" },
-		        { "Edward", "Ridder", "M" }, { "James", "Nasir", "M" }, { "Alivia", "Howden", "F" },
-				{ "Juliet", "Krafter", "F" }}) {
+				{ "Drew", "Zapato", "M" }, { "Jim", "Patillo", "M" }, { "Garrett", "Carothers", "M" },
+				{ "Kaitlyn", "Villamar", "F" }, { "Marshall", "Catlow", "M" }, { "Hadley", "Cockerhan", "F" },
+				{ "Patsy", "Furfey", "M" }, { "Kerri", "Hutts", "F" }, { "Helena", "Gillion", "F" },
+				{ "Kristal", "Emmitt", "F" }, { "Gardner", "Dove", "M" }, { "Shane", "Besanson", "M" },
+				{ "Kimberley", "Esterbrook", "F" }, { "Moses", "Dair", "M" }, { "Abby", "Metta", "F" },
+				{ "Frances", "Huyett", "F" }, { "Lester", "Amerman", "M" }, { "Sophia", "Horita", "F" },
+				{ "Rose", "Sarria", "F" }, { "Warren", "Castilla", "M" }, { "Kimberly", "Healy", "F" },
+				{ "Anaiyah", "Vaux", "F" }, { "Elena", "Amerson", "F" }, { "Marissa", "Letendre", "F" },
+				{ "Edward", "Ridder", "M" }, { "James", "Nasir", "M" }, { "Alivia", "Howden", "F" },
+				{ "Juliet", "Krafter", "F" } }) {
 			String userId = String.format("res%02d", i);
-			
+
 			Person person;
 			User user = userService.getUserByUsername(userId);
 			if (user != null) {
@@ -521,7 +560,7 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 			} else {
 				person = new Person();
 			}
-			
+
 			AccountDomainWrapper account = accountService.getAccountByPerson(person);
 			account.setGivenName(userInfo[0]);
 			account.setFamilyName(userInfo[1]);
@@ -538,9 +577,9 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 			account.setCapabilities(roles);
 			account.setProviderRole(physician);
 			account.setUserEnabled(true);
-			
+
 			accountService.saveAccount(account);
-			
+
 			i++;
 		}
 	}
@@ -559,15 +598,19 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 		}
 	}
 
-	private void createRegistrationEncounters(EmrEncounterService emrEncounterService, EncounterService encounterService, FormService formService, ConceptService conceptService, PatientService patientService, ProviderManagementService providerManagementService) {
+	private void createRegistrationEncounters(EmrEncounterService emrEncounterService, EncounterService encounterService,
+			FormService formService, ConceptService conceptService, PatientService patientService,
+			ProviderManagementService providerManagementService) {
 		log.info("Creating BCBI Training registration encounters");
 		PatientRegistrationHandler handler = new PatientRegistrationHandler();
 		try {
-			for (EncounterTransaction transaction : handler.generateRegistrationEncounters(conceptService, patientService, providerManagementService)) {
+			for (EncounterTransaction transaction : handler
+					.generateRegistrationEncounters(conceptService, patientService, providerManagementService)) {
 				log.info("Working on registration encounter for {}", transaction.getPatientUuid());
 				transaction = emrEncounterService.save(transaction);
 
-				if (transaction.getEncounterTypeUuid() != null && transaction.getEncounterTypeUuid().equals(ADMISSION_ENCOUNTER_TYPE_UUID)) {
+				if (transaction.getEncounterTypeUuid() != null && transaction.getEncounterTypeUuid()
+						.equals(ADMISSION_ENCOUNTER_TYPE_UUID)) {
 					Encounter encounter = encounterService.getEncounterByUuid(transaction.getEncounterUuid());
 					if (encounter != null) {
 						encounter.setForm(formService.getForm("Admission"));
@@ -575,17 +618,21 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 					}
 				}
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Caught an IOException while handling registration encounters", e);
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void createVitalEncounters(EmrEncounterService emrEncounterService, EncounterService encounterService, FormService formService, ConceptService conceptService, PatientService patientService, ProviderManagementService providerManagementService, VisitService visitService) {
+	private void createVitalEncounters(EmrEncounterService emrEncounterService, EncounterService encounterService,
+			FormService formService, ConceptService conceptService, PatientService patientService,
+			ProviderManagementService providerManagementService, VisitService visitService) {
 		log.info("Creating BCBI Training vitals encounters");
 		PatientVitalsHandler handler = new PatientVitalsHandler();
 		try {
-			for (EncounterTransaction transaction : handler.generateVitalsEncounters(conceptService, patientService, providerManagementService, visitService)) {
+			for (EncounterTransaction transaction : handler
+					.generateVitalsEncounters(conceptService, patientService, providerManagementService, visitService)) {
 				log.info("Working on vitals encounter for {}", transaction.getPatientUuid());
 				transaction = emrEncounterService.save(transaction);
 
@@ -593,7 +640,8 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 				encounter.setForm(formService.getForm("Vitals"));
 				encounterService.saveEncounter(encounter);
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Caught an IOException while handling vital encounters", e);
 			throw new RuntimeException(e);
 		}
@@ -621,7 +669,7 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 
 		if (!closeStaleVisitsTask.getStarted()) {
 			closeStaleVisitsTask.setStarted(true);
-			
+
 			try {
 				schedulerService.scheduleTask(closeStaleVisitsTask);
 			}
@@ -630,7 +678,7 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 			}
 		}
 	}
-	
+
 	/**
 	 * @see #stopped()
 	 */
@@ -638,5 +686,5 @@ public class BCBITrainingActivator extends BaseModuleActivator {
 	public void stopped() {
 		log.info("Shutdown BCBI Training");
 	}
-	
+
 }

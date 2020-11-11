@@ -19,17 +19,17 @@ import org.openmrs.util.PrivilegeConstants;
 
 @SuppressWarnings("unused")
 public interface ConceptNameService extends OpenmrsService {
-	
+
 	@Authorized(PrivilegeConstants.GET_CONCEPTS)
 	ConceptName getConceptName(Integer id) throws APIException;
-	
+
 	@Authorized(PrivilegeConstants.GET_CONCEPTS)
 	ConceptName getConceptNameByName(String name) throws APIException;
-	
+
 	@Authorized(PrivilegeConstants.GET_CONCEPTS)
 	ConceptName getConceptNameByName(String name, Locale locale) throws APIException;
-	
+
 	@Authorized(PrivilegeConstants.GET_CONCEPTS)
 	ConceptName getConceptNameByUuid(String uuid) throws APIException;
-	
+
 }

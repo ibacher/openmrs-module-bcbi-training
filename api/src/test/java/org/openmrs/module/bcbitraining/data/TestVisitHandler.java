@@ -1,9 +1,12 @@
 package org.openmrs.module.bcbitraining.data;
 
-import java.io.BufferedInputStream;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -12,9 +15,6 @@ import java.util.Iterator;
 import org.junit.Test;
 import org.openmrs.module.bcbitraining.descriptor.data.EncounterDescriptor;
 import org.openmrs.module.bcbitraining.descriptor.data.VisitDescriptor;
-
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 
 public class TestVisitHandler extends RecordHandlerTest<VisitHandler> {
 

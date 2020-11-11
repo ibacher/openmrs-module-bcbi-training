@@ -28,9 +28,13 @@ import static org.openmrs.module.bcbitraining.BCBITrainingConstants.*;
 public class PatientVitalsHandler extends BaseCSVHandler {
 
 	private static final String DATA_FILE = "/data/vitals_encounters.csv";
-	private static final String[] VITALS = { "HEIGHT", "WEIGHT", "TEMPERATURE", "HEART_RATE", "RESPIRATORY_RATE", "SYSTOLIC_BP", "DIASTOLIC_BP", "O2_SAT" };
 
-	public Iterable<EncounterTransaction> generateVitalsEncounters(ConceptService conceptService, PatientService patientService, ProviderManagementService providerManagementService, VisitService visitService) throws IOException {
+	private static final String[] VITALS = { "HEIGHT", "WEIGHT", "TEMPERATURE", "HEART_RATE", "RESPIRATORY_RATE",
+			"SYSTOLIC_BP", "DIASTOLIC_BP", "O2_SAT" };
+
+	public Iterable<EncounterTransaction> generateVitalsEncounters(ConceptService conceptService,
+			PatientService patientService, ProviderManagementService providerManagementService, VisitService visitService)
+			throws IOException {
 		Set<EncounterTransaction> encounters = new LinkedHashSet<>();
 		PatientIdentifierType identifierType = patientService.getPatientIdentifierTypeByUuid(ZL_EMR_PATIENT_ID_TYPE_UUID);
 		ProviderRole physicianRole = providerManagementService.getProviderRoleByUuid(PHYSICIAN_PROVIDERROLE_UUID);
@@ -62,15 +66,17 @@ public class PatientVitalsHandler extends BaseCSVHandler {
 			Date encounterDate;
 			try {
 				encounterDate = DATE_FORMAT.parse(record.get("EVENT_TIME"));
-			} catch (ParseException e) {
+			}
+			catch (ParseException e) {
 				throw new IOException(e);
 			}
 
 			String visitUuid = null;
 			Set<EncounterTransaction.Provider> providers = null;
-			List<Visit> visits = visitService.getVisits(Collections.singletonList(visitType), Collections.singletonList(thePatient),
-					null, null, null, null, null,
-					null, null, true, false);
+			List<Visit> visits = visitService
+					.getVisits(Collections.singletonList(visitType), Collections.singletonList(thePatient),
+							null, null, null, null, null,
+							null, null, true, false);
 			if (visits != null && visits.size() > 0 && visits.get(0) != null) {
 				Visit visit = visits.get(0);
 				if (visit.getStartDatetime().before(encounterDate) || visit.getStartDatetime().equals(encounterDate)) {
@@ -83,10 +89,9 @@ public class PatientVitalsHandler extends BaseCSVHandler {
 						encounterDate = visit.getStartDatetime();
 					}
 
-
 					visitUuid = visit.getUuid();
 
-					Encounter registrationEncounter =  visit.getNonVoidedEncounters().get(0);
+					Encounter registrationEncounter = visit.getNonVoidedEncounters().get(0);
 					for (EncounterProvider enProvider : registrationEncounter.getEncounterProviders()) {
 						if (providers == null) {
 							providers = new LinkedHashSet<>();

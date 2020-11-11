@@ -12,11 +12,17 @@ import org.openmrs.Visit;
 public class VisitDescriptor extends DataDescriptor<Visit> {
 
 	private String uuid;
+
 	private String visitTypeUuid;
+
 	private Date startDateTime;
+
 	private Date stopDateTime;
+
 	private LocationDescriptor location;
+
 	private PatientDescriptor patient;
+
 	private List<EncounterDescriptor> encounters;
 
 }

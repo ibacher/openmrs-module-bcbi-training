@@ -13,6 +13,8 @@ public abstract class DataDescriptor<T extends OpenmrsObject> {
 	}
 
 	@SuppressWarnings("unused")
-	public Class<T> getDescribedType() { return clazz; }
+	public Class<T> getDescribedType() {
+		return clazz;
+	}
 
 }

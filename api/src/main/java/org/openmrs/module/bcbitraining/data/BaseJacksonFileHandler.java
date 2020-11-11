@@ -1,20 +1,19 @@
 package org.openmrs.module.bcbitraining.data;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.openmrs.module.bcbitraining.descriptor.data.*;
 import org.openmrs.module.bcbitraining.descriptor.data.mixins.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j(topic = "org.openmrs.api")
 public abstract class BaseJacksonFileHandler extends BaseHandler {
 
-	final Logger log = LoggerFactory.getLogger("org.openmrs.api");
 	private final ObjectMapper objectMapper;
 	
 	BaseJacksonFileHandler() {
@@ -22,7 +21,7 @@ public abstract class BaseJacksonFileHandler extends BaseHandler {
 		objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
 		objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
 		objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-		objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
+		objectMapper.configure(JsonParser.Feature.ALLOW_TRAILING_COMMA, true);
 		objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 		objectMapper.addMixIn(VisitDescriptor.class, VisitMixin.class);
 		objectMapper.addMixIn(EncounterDescriptor.class, EncounterMixin.class);

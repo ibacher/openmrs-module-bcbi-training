@@ -1,6 +1,5 @@
 package org.openmrs.module.bcbitraining.descriptor.data;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.openmrs.Provider;
@@ -10,7 +9,9 @@ import org.openmrs.Provider;
 public class ProviderDescriptor extends DataDescriptor<Provider> {
 
 	private String uuid;
+
 	private String identifier;
+
 	private PersonDescriptor person;
 
 }

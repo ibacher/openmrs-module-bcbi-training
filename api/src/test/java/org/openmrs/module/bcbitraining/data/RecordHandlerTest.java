@@ -18,18 +18,21 @@ public abstract class RecordHandlerTest<T extends BaseHandler> {
 
 	@Before
 	public void setup() throws IllegalAccessException, InstantiationException {
+		@SuppressWarnings("unchecked")
 		Class<T> clazz = (Class<T>) TypeResolver.resolveRawArgument(RecordHandlerTest.class, getClass());
 		this.handler = clazz.newInstance();
 
 		BCBIDataRecordService dataRecordService = mock(BCBIDataRecordService.class);
 		when(dataRecordService.getDataRecordByFile(anyString())).thenReturn(null);
 		when(dataRecordService.saveDataRecord(any(BCBIDataRecord.class))).thenReturn(null);
+
 		handler.setDataRecordService(dataRecordService);
 	}
 
-	public void setupHandlerWithRecordFor(String file) throws IOException {
+	public void setupHandlerWithRecordFor(String file) {
 		BCBIDataRecordService dataRecordService = mock(BCBIDataRecordService.class);
 		when(dataRecordService.hasFileBeenSeen(file)).thenReturn(true);
+
 		handler.setDataRecordService(dataRecordService);
 	}
 

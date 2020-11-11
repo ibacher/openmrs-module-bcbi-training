@@ -9,9 +9,13 @@ import org.openmrs.Patient;
 public class PatientDescriptor extends DataDescriptor<Patient> {
 
 	private String uuid;
+
 	private Integer id;
+
 	private String identifier;
+
 	private String identifierTypeUuid;
+
 	private PersonDescriptor person;
 
 }

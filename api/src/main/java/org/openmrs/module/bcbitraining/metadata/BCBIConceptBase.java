@@ -14,94 +14,94 @@ import org.openmrs.module.bcbitraining.descriptor.mds.ConceptDatatypeDescriptor;
 import org.openmrs.module.bcbitraining.descriptor.mds.ConceptSourceDescriptor;
 
 public class BCBIConceptBase {
-	
+
 	public static final ConceptSourceDescriptor CIEL = new ConceptSourceDescriptor() {
-		
+
 		@Override
 		public String name() {
 			return "CIEL";
 		}
-		
+
 		@Override
 		public String description() {
 			return null;
 		}
-		
+
 		@Override
 		public String uuid() {
 			return "21ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";
 		}
 	};
-	
+
 	public static final ConceptSourceDescriptor PIH = new ConceptSourceDescriptor() {
-		
+
 		@Override
 		public String name() {
 			return "PIH";
 		}
-		
+
 		@Override
 		public String description() {
 			return null;
 		}
-		
+
 		@Override
 		public String uuid() {
 			return null;
 		}
 	};
-	
+
 	public static final ConceptSourceDescriptor LOINC = new ConceptSourceDescriptor() {
-		
+
 		@Override
 		public String name() {
 			return "LOINC";
 		}
-		
+
 		@Override
 		public String description() {
 			return null;
 		}
-		
+
 		@Override
 		public String uuid() {
 			return null;
 		}
 	};
-	
+
 	public static final ConceptDatatypeDescriptor CODED = new ConceptDatatypeDescriptor() {
-		
+
 		@Override
 		public String name() {
 			return "Coded";
 		}
-		
+
 		@Override
 		public String uuid() {
 			return BCBITrainingConstants.CODED_DATATYPE_UUID;
 		}
 	};
-	
+
 	public static final ConceptDatatypeDescriptor NA = new ConceptDatatypeDescriptor() {
-		
+
 		@Override
 		public String name() {
 			return "N/A";
 		}
-		
+
 		@Override
 		public String uuid() {
 			return BCBITrainingConstants.NA_DATATYPE_UUID;
 		}
 	};
-	
+
 	public static final ConceptDatatypeDescriptor NUMERIC = new ConceptDatatypeDescriptor() {
-		
+
 		@Override
 		public String name() {
 			return "Numeric";
 		}
-		
+
 		@Override
 		public String uuid() {
 			return BCBITrainingConstants.NUMERIC_DATATYPE_UUID;

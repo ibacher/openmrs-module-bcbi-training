@@ -16,27 +16,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.io.input.BOMInputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.bcbitraining.BCBIDataRecord;
-import org.openmrs.module.bcbitraining.api.BCBIDataRecordService;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.providermanagement.Provider;
-import org.openmrs.util.OpenmrsClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +85,7 @@ public abstract class BaseCSVHandler extends BaseHandler {
 				ConceptNumeric numericConcept = Context.getConceptService().getConceptNumericByUuid(concept.getUuid());
 
 				if (value instanceof Number) {
-					if (!valueInRange((Number) value, numericConcept)) {
+					if (valueNotInRange((Number) value, numericConcept)) {
 						log.error("Value {} is not in range for concept {}", value, concept.getName());
 						value = null;
 					}
@@ -115,7 +108,7 @@ public abstract class BaseCSVHandler extends BaseHandler {
 					}
 
 					if (value != null) {
-						if (!valueInRange((Number) value, numericConcept)) {
+						if (valueNotInRange((Number) value, numericConcept)) {
 							log.error("Value {} is not in range for concept {}", value, concept.getName());
 							value = null;
 						}
@@ -134,7 +127,7 @@ public abstract class BaseCSVHandler extends BaseHandler {
 				.setValue(value);
 	}
 
-	EncounterTransaction addObsIfNotNull(EncounterTransaction encounterTransaction, EncounterTransaction.Observation obs) {
+	void addObsIfNotNull(EncounterTransaction encounterTransaction, EncounterTransaction.Observation obs) {
 		if (encounterTransaction == null) {
 			throw new IllegalArgumentException("Encounter transaction cannot be null");
 		}
@@ -143,10 +136,9 @@ public abstract class BaseCSVHandler extends BaseHandler {
 			encounterTransaction.addObservation(obs);
 		}
 
-		return encounterTransaction;
 	}
 
-	EncounterTransaction.Observation addObsIfNotNull(EncounterTransaction.Observation observationGroup, EncounterTransaction.Observation obs) {
+	void addObsIfNotNull(EncounterTransaction.Observation observationGroup, EncounterTransaction.Observation obs) {
 		if (observationGroup == null) {
 			throw new IllegalArgumentException("Observation group cannot be null");
 		}
@@ -155,16 +147,15 @@ public abstract class BaseCSVHandler extends BaseHandler {
 			observationGroup.addGroupMember(obs);
 		}
 
-		return observationGroup;
 	}
 
-	private boolean valueInRange(Number value, ConceptNumeric numericConcept) {
-		return valueInRange(value, numericConcept.getLowAbsolute(), numericConcept.getHiAbsolute());
+	private boolean valueNotInRange(Number value, ConceptNumeric numericConcept) {
+		return valueNotInRange(value, numericConcept.getLowAbsolute(), numericConcept.getHiAbsolute());
 	}
 
-	private boolean valueInRange(Number value, Double lowValue, Double highValue) {
+	private boolean valueNotInRange(Number value, Double lowValue, Double highValue) {
 		double valueDouble = value.doubleValue();
-		return !(valueDouble < lowValue) && !(valueDouble > highValue);
+		return (valueDouble < lowValue) || (valueDouble > highValue);
 	}
 
 }

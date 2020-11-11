@@ -9,8 +9,11 @@ import org.openmrs.Concept;
 public class ConceptDescriptor extends DataDescriptor<Concept> {
 
 	private Integer id;
+
 	private String uuid;
+
 	private String mappingSource;
+
 	private String mappingCode;
 
 }

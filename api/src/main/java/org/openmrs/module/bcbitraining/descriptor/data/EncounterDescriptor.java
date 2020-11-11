@@ -12,13 +12,21 @@ import org.openmrs.Encounter;
 public class EncounterDescriptor extends DataDescriptor<Encounter> {
 
 	private String uuid;
+
 	private String encounterTypeUuid;
+
 	private Date dateTime;
+
 	private LocationDescriptor location;
+
 	private FormDescriptor form;
+
 	private PatientDescriptor patient;
+
 	private List<OrderDescriptor> orders;
+
 	private List<ObsDescriptor> obs;
+
 	private List<ProviderDescriptor> providers;
 
 }

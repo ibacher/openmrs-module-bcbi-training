@@ -24,11 +24,18 @@ import org.openmrs.User;
 public class BCBIDataRecord extends BaseOpenmrsData implements Retireable {
 
 	private Integer id;
-	@EqualsAndHashCode.Include private String file;
+
+	@EqualsAndHashCode.Include
+	private String file;
+
 	private byte[] hashValue;
+
 	private Boolean retired;
+
 	private User retiredBy;
+
 	private Date dateRetired;
+
 	private String retireReason;
 
 	/**
@@ -68,19 +75,19 @@ public class BCBIDataRecord extends BaseOpenmrsData implements Retireable {
 	}
 
 	/**
-	 * @see Retireable#isRetired()
-	 */
-	@Override
-	public Boolean isRetired() {
-		return retired;
-	}
-
-	/**
 	 * @see Retireable#setRetired(Boolean)
 	 */
 	@Override
 	public void setRetired(Boolean retired) {
 		this.retired = retired;
+	}
+
+	/**
+	 * @see Retireable#isRetired()
+	 */
+	@Override
+	public Boolean isRetired() {
+		return retired;
 	}
 
 	/**

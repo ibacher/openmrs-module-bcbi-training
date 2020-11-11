@@ -9,6 +9,7 @@ import org.openmrs.Location;
 public class LocationDescriptor extends DataDescriptor<Location> {
 
 	private Integer id;
+
 	private String uuid;
 
 }

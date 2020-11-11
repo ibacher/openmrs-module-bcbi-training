@@ -9,6 +9,11 @@
  */
 package org.openmrs.module.bcbitraining.api.db.hibernate;
 
+import static org.hibernate.criterion.Restrictions.and;
+import static org.hibernate.criterion.Restrictions.eq;
+
+import java.util.List;
+
 import lombok.Setter;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.api.db.hibernate.DbSession;
@@ -18,10 +23,6 @@ import org.openmrs.module.bcbitraining.api.db.BCBIDataRecordDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.hibernate.criterion.Restrictions.*;
-
-import java.util.List;
 
 @Transactional
 @SuppressWarnings("unused")

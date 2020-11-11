@@ -9,6 +9,7 @@ import org.openmrs.Form;
 public class FormDescriptor extends DataDescriptor<Form> {
 
 	private Integer id;
+
 	private String uuid;
 
 }

@@ -9,7 +9,9 @@ import org.openmrs.Person;
 public class PersonDescriptor extends DataDescriptor<Person> {
 
 	private String givenName;
+
 	private String middleName;
+
 	private String familyName;
 
 }
