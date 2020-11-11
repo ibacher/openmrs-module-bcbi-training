@@ -9,6 +9,13 @@
  */
 package org.openmrs.module.bcbitraining.api.impl;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+import lombok.Setter;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.openmrs.api.APIException;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.bcbitraining.BCBIDataRecord;
@@ -18,7 +25,23 @@ import org.openmrs.module.bcbitraining.api.db.BCBIDataRecordDAO;
 @SuppressWarnings("unused")
 public class BCBIDataRecordServiceImpl extends BaseOpenmrsService implements BCBIDataRecordService {
 
+	@Setter
 	private BCBIDataRecordDAO dao;
+
+	@Override
+	public boolean hasFileBeenSeen(String file) throws APIException {
+		BCBIDataRecord dataRecord = getDataRecordByFile(file);
+
+		if (dataRecord == null) {
+			return false;
+		}
+
+		byte[] hashValue = dataRecord.getHashValue();
+		if (hashValue == null) { return false; }
+
+		byte[] currentHash = calculateHash(file);
+		return Arrays.equals(currentHash, hashValue);
+	}
 
 	@Override
 	public BCBIDataRecord getDataRecord(Integer id) {
@@ -47,8 +70,37 @@ public class BCBIDataRecordServiceImpl extends BaseOpenmrsService implements BCB
 		return dao.saveDataRecord(dataRecord);
 	}
 
-	@SuppressWarnings("unused")
-	public void setDao(BCBIDataRecordDAO dao) {
-		this.dao = dao;
+	@Override
+	public BCBIDataRecord saveDataRecord(String file) throws APIException {
+		BCBIDataRecord dataRecord = getDataRecordByFile(file);
+
+		if (dataRecord == null) {
+			dataRecord = new BCBIDataRecord();
+			dataRecord.setFile(file);
+		}
+
+		byte[] currentHash = calculateHash(file);
+		dataRecord.setHashValue(currentHash);
+
+		return saveDataRecord(dataRecord);
 	}
+
+	private byte[] calculateHash(String file) throws APIException {
+		InputStream is = ClassLoader.getSystemResourceAsStream(file);
+		if (is == null) {
+			throw new APIException("Could not find file " + file);
+		}
+		BufferedInputStream bis = new BufferedInputStream(is);
+
+		byte[] currentHash;
+		try {
+			currentHash = DigestUtils.sha256(bis);
+		}
+		catch (IOException e) {
+			throw new APIException(e);
+		}
+
+		return currentHash;
+	}
+
 }

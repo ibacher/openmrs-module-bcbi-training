@@ -25,7 +25,7 @@ import org.openmrs.module.providermanagement.api.ProviderManagementService;
 
 import static org.openmrs.module.bcbitraining.BCBITrainingConstants.*;
 
-public class PatientVitalsHandler extends BaseRecordHandler {
+public class PatientVitalsHandler extends BaseCSVHandler {
 
 	private static final String DATA_FILE = "/data/vitals_encounters.csv";
 	private static final String[] VITALS = { "HEIGHT", "WEIGHT", "TEMPERATURE", "HEART_RATE", "RESPIRATORY_RATE", "SYSTOLIC_BP", "DIASTOLIC_BP", "O2_SAT" };

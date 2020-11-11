@@ -11,6 +11,8 @@ package org.openmrs.module.bcbitraining.task;
 
 import org.openmrs.scheduler.tasks.AbstractTask;
 
+// for our purposes, visits are never stale, so this task does nothing, but is used to replace the real CloseStaleVisitsTask
+// to ensure our visits stay open
 public class CloseStaleVisitsTask extends AbstractTask {
 
 	@Override

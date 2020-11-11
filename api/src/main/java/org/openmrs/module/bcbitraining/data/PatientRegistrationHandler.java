@@ -17,7 +17,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.openmrs.*;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
-import org.openmrs.module.bcbitraining.data.descriptor.DiagnosisDescriptor;
+import org.openmrs.module.bcbitraining.descriptor.data.DiagnosisDescriptor;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.providermanagement.Provider;
 import org.openmrs.module.providermanagement.ProviderRole;
@@ -25,7 +25,7 @@ import org.openmrs.module.providermanagement.api.ProviderManagementService;
 
 import static org.openmrs.module.bcbitraining.BCBITrainingConstants.*;
 
-public class PatientRegistrationHandler extends BaseRecordHandler {
+public class PatientRegistrationHandler extends BaseCSVHandler {
 
 	private static final String DATA_FILE = "/data/registration_encounters.csv";
 	private static final String DX_DATA_FILE = "/data/diagnoses.csv";
@@ -85,7 +85,16 @@ public class PatientRegistrationHandler extends BaseRecordHandler {
 		for (CSVRecord record : getRecordsForFile(DX_DATA_FILE)) {
 			String patientId = record.get("SUBJECT_ID");
 			Collection<DiagnosisDescriptor> patientDxs = diagnoses.computeIfAbsent(patientId, k -> new ArrayList<>());
-			patientDxs.add(new DiagnosisDescriptor(record.get("CIEL_CODE"), record.get("PRIMARY_DX").equals("1")));
+			final String cielCode = record.get("CIEL_CODE");
+			final boolean primaryDx = record.get("PRIMARY_DX").equals("1");
+
+			patientDxs.add(new DiagnosisDescriptor() {
+				@Override
+				public String cielCode() { return cielCode; }
+
+				@Override
+				public boolean primary() { return primaryDx; }
+			});
 		}
 
 		Date now = new Date();

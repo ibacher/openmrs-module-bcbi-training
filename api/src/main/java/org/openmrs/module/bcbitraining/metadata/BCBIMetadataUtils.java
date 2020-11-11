@@ -10,7 +10,7 @@
 package org.openmrs.module.bcbitraining.metadata;
 
 import org.openmrs.ConceptName;
-import org.openmrs.module.bcbitraining.descriptor.ConceptNameDescriptor;
+import org.openmrs.module.bcbitraining.descriptor.mds.ConceptNameDescriptor;
 
 public class BCBIMetadataUtils {
 	

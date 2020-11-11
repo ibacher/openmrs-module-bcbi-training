@@ -1,0 +1,4 @@
+{
+  echo: "this is not valid syntax",
+  "nor": "is this"
+}

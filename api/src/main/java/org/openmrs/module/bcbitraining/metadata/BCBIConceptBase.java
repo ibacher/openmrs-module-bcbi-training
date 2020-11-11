@@ -10,8 +10,8 @@
 package org.openmrs.module.bcbitraining.metadata;
 
 import org.openmrs.module.bcbitraining.BCBITrainingConstants;
-import org.openmrs.module.bcbitraining.descriptor.ConceptDatatypeDescriptor;
-import org.openmrs.module.bcbitraining.descriptor.ConceptSourceDescriptor;
+import org.openmrs.module.bcbitraining.descriptor.mds.ConceptDatatypeDescriptor;
+import org.openmrs.module.bcbitraining.descriptor.mds.ConceptSourceDescriptor;
 
 public class BCBIConceptBase {
 	

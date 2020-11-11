@@ -7,25 +7,14 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.bcbitraining.data.descriptor;
+package org.openmrs.module.bcbitraining.descriptor.data;
 
-public class DiagnosisDescriptor {
+import org.openmrs.Concept;
+
+public abstract class DiagnosisDescriptor extends DataDescriptor<Concept> {
 	
-	private final String cielCode;
+	public abstract String cielCode();
 	
-	private final boolean primary;
-	
-	public DiagnosisDescriptor(String cielCode, boolean primary) {
-		this.cielCode = cielCode;
-		this.primary = primary;
-	}
-	
-	public String cielCode() {
-		return this.cielCode;
-	}
-	
-	public boolean primary() {
-		return primary;
-	}
-	
+	public abstract boolean primary();
+
 }

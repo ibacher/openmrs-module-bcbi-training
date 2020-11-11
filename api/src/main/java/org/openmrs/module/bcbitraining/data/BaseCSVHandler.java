@@ -25,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.input.BOMInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.Patient;
@@ -35,57 +36,24 @@ import org.openmrs.module.bcbitraining.BCBIDataRecord;
 import org.openmrs.module.bcbitraining.api.BCBIDataRecordService;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.providermanagement.Provider;
+import org.openmrs.util.OpenmrsClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseRecordHandler {
+public abstract class BaseCSVHandler extends BaseHandler {
 
 	final Logger log = LoggerFactory.getLogger("org.openmrs.api");
 	static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	Iterable<CSVRecord> getRecordsForFile(String file) throws IOException {
-		if (file == null) {
-			throw new IllegalArgumentException("file cannot be null");
+		try (InputStream is = loadFile(file)) {
+			if (hasFileBeenSeen(file)) {
+				return null;
+			}
+
+			return CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(
+					new InputStreamReader(is)).getRecords();
 		}
-
-		InputStream is = this.getClass().getResourceAsStream(file);
-		if (is == null) {
-			log.error("Could not find file {}", file);
-			return Collections.emptyList();
-		}
-
-		BCBIDataRecordService dataRecordService = Context.getService(BCBIDataRecordService.class);
-		BCBIDataRecord dataRecord = dataRecordService.getDataRecordByFile(file);
-
-		// mark the start of the input stream
-		is.mark(Integer.MAX_VALUE);
-		byte[] currentHash = DigestUtils.sha256(is);
-		// rewind to actually read the input stream
-		is.reset();
-
-		if (dataRecord != null && hasFileBeenSeen(dataRecord, currentHash)) {
-			log.info("File {} has already been processed", file);
-			return Collections.emptyList();
-		}
-
-		return CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(new InputStreamReader(new BOMInputStream(is))).getRecords();
-	}
-
-	void saveDataRecord(String file) throws IOException {
-		InputStream is = this.getClass().getResourceAsStream(file);
-		byte[] currentHash = DigestUtils.sha256(is);
-
-		BCBIDataRecordService dataRecordService = Context.getService(BCBIDataRecordService.class);
-		BCBIDataRecord dataRecord = dataRecordService.getDataRecordByFile(file);
-
-		if (dataRecord == null) {
-			dataRecord = new BCBIDataRecord();
-			dataRecord.setFile(file);
-		}
-
-		dataRecord.setHashValue(currentHash);
-
-		dataRecordService.saveDataRecord(dataRecord);
 	}
 
 	Patient getPatientForRecord(CSVRecord record, PatientService patientService, PatientIdentifierType identifierType) {
@@ -104,12 +72,6 @@ public abstract class BaseRecordHandler {
 		}
 
 		return patients.get(0);
-	}
-
-	private boolean hasFileBeenSeen(BCBIDataRecord dataRecord, byte[] currentHash) {
-		byte[] hashValue = dataRecord.getHashValue();
-		if (hashValue == null) { return false; }
-		return Arrays.equals(currentHash, hashValue);
 	}
 
 	EncounterTransaction.Provider getProviderFromPhysician(Provider provider) {

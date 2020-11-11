@@ -16,8 +16,13 @@ import org.openmrs.module.bcbitraining.BCBIDataRecord;
 
 import static org.openmrs.module.bcbitraining.BCBITrainingPrivilegeConstants.*;
 
+import java.io.InputStream;
+
 @SuppressWarnings("unused")
 public interface BCBIDataRecordService extends OpenmrsService {
+
+	@Authorized(GET_DATA_RECORDS)
+	boolean hasFileBeenSeen(String file) throws APIException;
 
 	@Authorized(GET_DATA_RECORDS)
 	BCBIDataRecord getDataRecord(Integer id) throws APIException;
@@ -33,5 +38,8 @@ public interface BCBIDataRecordService extends OpenmrsService {
 
 	@Authorized(EDIT_DATA_RECORDS)
 	BCBIDataRecord saveDataRecord(BCBIDataRecord dataRecord) throws APIException;
+
+	@Authorized(EDIT_DATA_RECORDS)
+	BCBIDataRecord saveDataRecord(String file) throws APIException;
 
 }

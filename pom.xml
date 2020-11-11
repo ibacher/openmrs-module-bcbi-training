@@ -86,6 +86,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>initializer-api</artifactId>
+			<version>${initializerVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 			<version>1.7</version>
@@ -99,6 +105,32 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jacksonVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-afterburner</artifactId>
+			<version>${jacksonVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>typetools</artifactId>
+			<version>0.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.pcollections</groupId>
+			<artifactId>pcollections</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.10</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -139,5 +171,7 @@
 		<providermanagementVersion>2.5.0</providermanagementVersion>
 		<emrVersion>2.1.0</emrVersion>
 		<owaVersion>1.11.0</owaVersion>
+		<initializerVersion>1.2.0-SNAPSHOT</initializerVersion>
+		<jacksonVersion>2.10.1</jacksonVersion>
 	</properties>
 </project>

@@ -11,6 +11,7 @@ package org.openmrs.module.bcbitraining.api.impl;
 
 import java.util.Locale;
 
+import lombok.Setter;
 import org.openmrs.ConceptName;
 import org.openmrs.api.APIException;
 import org.openmrs.api.impl.BaseOpenmrsService;
@@ -25,7 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ConceptNameServiceImpl extends BaseOpenmrsService implements ConceptNameService {
 	
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
+	@Setter
 	private ConceptNameDAO dao;
 	
 	@Override
@@ -46,9 +48,5 @@ public class ConceptNameServiceImpl extends BaseOpenmrsService implements Concep
 	@Override
 	public ConceptName getConceptNameByUuid(String uuid) throws APIException {
 		return dao.getConceptNameByUuid(uuid);
-	}
-	
-	public void setDao(ConceptNameDAO dao) {
-		this.dao = dao;
 	}
 }

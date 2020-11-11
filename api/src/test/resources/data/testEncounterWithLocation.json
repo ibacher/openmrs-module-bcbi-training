@@ -1,0 +1,10 @@
+{
+  "encounters": [
+    {
+      "uuid": "7e348e18-ca16-4520-80ed-7df789c31d89",
+      "encounterTypeUuid": "51ec687f-57b3-43bc-bf30-0329a292dcc3",
+      "dateTime": "2019-01-01 12:35:00",
+      "locationUuid": "469fff4c-ce23-43bf-8650-1b4507f899f7"
+    }
+  ]
+}

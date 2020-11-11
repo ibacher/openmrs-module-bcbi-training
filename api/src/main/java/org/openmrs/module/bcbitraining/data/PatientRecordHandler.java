@@ -20,7 +20,7 @@ import org.openmrs.api.PersonService;
 
 import static org.openmrs.module.bcbitraining.BCBITrainingConstants.ZL_EMR_PATIENT_ID_TYPE_UUID;
 
-public class PatientRecordHandler extends BaseRecordHandler {
+public class PatientRecordHandler extends BaseCSVHandler {
 
 	private static final String DATA_FILE = "/data/patients.csv";
 

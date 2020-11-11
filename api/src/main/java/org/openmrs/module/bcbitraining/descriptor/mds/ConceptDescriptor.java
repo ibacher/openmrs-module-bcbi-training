@@ -7,21 +7,31 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.bcbitraining.descriptor;
+package org.openmrs.module.bcbitraining.descriptor.mds;
 
-import org.openmrs.ConceptDatatype;
+import org.openmrs.Concept;
 import org.openmrs.module.metadatadeploy.descriptor.MetadataDescriptor;
 
-public abstract class ConceptDatatypeDescriptor extends MetadataDescriptor {
+public abstract class ConceptDescriptor extends MetadataDescriptor {
 	
 	@Override
-	public String description() {
+	public String name() {
+		throw new IllegalStateException();
+	}
+	
+	abstract public Iterable<? extends ConceptNameDescriptor> names();
+	
+	abstract public ConceptClassDescriptor conceptClass();
+	
+	abstract public ConceptDatatypeDescriptor datatype();
+	
+	public Iterable<? extends ConceptMapDescriptor> sameAs() {
 		return null;
 	}
 	
 	@Override
 	public Class getDescribedType() {
-		return ConceptDatatype.class;
+		return Concept.class;
 	}
 	
 }

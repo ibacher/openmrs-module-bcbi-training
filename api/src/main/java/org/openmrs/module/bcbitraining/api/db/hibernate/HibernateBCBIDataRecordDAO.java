@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.bcbitraining.api.db.hibernate;
 
+import lombok.Setter;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.api.db.hibernate.DbSession;
 import org.openmrs.api.db.hibernate.DbSessionFactory;
@@ -28,6 +29,7 @@ public class HibernateBCBIDataRecordDAO implements BCBIDataRecordDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(HibernateBCBIDataRecordDAO.class);
 
+	@Setter
 	private DbSessionFactory sessionFactory;
 
 	@Override
@@ -82,8 +84,4 @@ public class HibernateBCBIDataRecordDAO implements BCBIDataRecordDAO {
 		return dataRecord;
 	}
 
-	@SuppressWarnings("unused")
-	public void setSessionFactory(DbSessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
-	}
 }

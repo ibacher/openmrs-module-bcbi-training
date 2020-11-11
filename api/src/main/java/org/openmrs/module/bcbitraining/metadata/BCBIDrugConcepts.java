@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.Locale;
 
 import org.openmrs.api.ConceptNameType;
-import org.openmrs.module.bcbitraining.descriptor.*;
+import org.openmrs.module.bcbitraining.descriptor.mds.*;
 
 import static org.openmrs.api.ConceptNameType.*;
 import static org.openmrs.module.bcbitraining.BCBITrainingConstants.*;

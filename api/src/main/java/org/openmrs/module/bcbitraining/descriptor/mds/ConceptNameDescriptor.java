@@ -7,20 +7,27 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.bcbitraining.descriptor;
+package org.openmrs.module.bcbitraining.descriptor.mds;
 
-import org.openmrs.ConceptSource;
+import java.util.Locale;
+
+import org.openmrs.ConceptName;
+import org.openmrs.api.ConceptNameType;
 import org.openmrs.module.metadatadeploy.descriptor.MetadataDescriptor;
 
-public abstract class ConceptSourceDescriptor extends MetadataDescriptor {
+public abstract class ConceptNameDescriptor extends MetadataDescriptor {
+	
+	abstract public Locale locale();
+	
+	abstract public boolean preferred();
+	
+	public ConceptNameType nameType() {
+		return null;
+	}
 	
 	@Override
 	public Class getDescribedType() {
-		return ConceptSource.class;
-	}
-	
-	public String hl7Code() {
-		return null;
+		return ConceptName.class;
 	}
 	
 }

@@ -11,6 +11,7 @@ package org.openmrs.module.bcbitraining;
 
 import java.util.Date;
 
+import lombok.EqualsAndHashCode;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Retireable;
@@ -19,10 +20,11 @@ import org.openmrs.User;
 /**
  * Persistent object representing a data file that has been read
  */
+@EqualsAndHashCode(callSuper = true)
 public class BCBIDataRecord extends BaseOpenmrsData implements Retireable {
 
 	private Integer id;
-	private String file;
+	@EqualsAndHashCode.Include private String file;
 	private byte[] hashValue;
 	private Boolean retired;
 	private User retiredBy;
@@ -129,34 +131,4 @@ public class BCBIDataRecord extends BaseOpenmrsData implements Retireable {
 		this.retireReason = retireReason;
 	}
 
-	/**
-	 * @see Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		int hash = 7;
-		hash = hash + (this.getId() != null ? 31 * this.getId().hashCode() : 31) + (this.getFile() != null ? 17 * this.getFile().hashCode() : 17);
-		return hash;
-	}
-
-	/**
-	 * @see Object#equals(Object)
-	 */
-	@Override
-	public boolean equals(Object that) {
-		if (that == null) {
-			return false;
-		}
-
-		if (this == that) {
-			return true;
-		}
-
-		if (!(that instanceof  BCBIDataRecord)) {
-			return false;
-		}
-
-		BCBIDataRecord rhs = (BCBIDataRecord) that;
-		return this.id.equals(rhs.id) && this.file.equals(rhs.file);
-	}
 }
